@@ -18,7 +18,7 @@ public class TTT extends Application {
   public void start(Stage stage) {
     VBox parent = new VBox();
     GridPane grid = new GridPane();
-    t = new Text("Velg en rute");
+    t = new Text("Pick a square");
     t.setFont(new Font(60));
     grid.setGridLinesVisible(true);
 
@@ -36,7 +36,7 @@ public class TTT extends Application {
     parent.getChildren().add(t);
     Scene scene = new Scene(parent);
     stage.setScene(scene);
-    stage.setTitle("Tre på rad");
+    stage.setTitle("Tic tac toe");
     stage.show();
   }
 
@@ -71,7 +71,7 @@ public class TTT extends Application {
   }
 
   private void gameDraw() {
-    t.setText("Det ble uavgjort!");
+    t.setText("It's a draw!");
     finished = true;
   }
 
@@ -112,7 +112,7 @@ public class TTT extends Application {
   }
 
   private void announceWinner(char symbol) {
-    t.setText(symbol + " vant!");
+    t.setText(symbol + " won!");
     finished = true;
   }
 
