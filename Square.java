@@ -1,13 +1,12 @@
-import javafx.scene.control.Button;
-import javafx.scene.text.Text;
-import javafx.scene.text.Font;
 import javafx.event.*;
+import javafx.scene.control.Button;
+import javafx.scene.text.Font;
 
-public class Square extends Button{
+public class Square extends Button {
   char symbol;
-  boolean taken = false;
+  int value = 0;
 
-  Square(char text){
+  Square(char text) {
     super("" + text);
     symbol = text;
     setText("" + text);
@@ -17,19 +16,25 @@ public class Square extends Button{
     setFont(font);
   }
 
-  public void playMove(char symbol){
-    if (this.taken == false){
-      setText("" + symbol);
-      this.symbol = symbol;
-      this.taken = true;
+  public void playMove(char symbol) {
+    setText("" + symbol);
+    this.symbol = symbol;
+    if (symbol == 'O') {
+      this.value = 1;
+    } else {
+      this.value = -1;
     }
   }
 
-  public char getSymbol(){
+  public char getSymbol() {
     return symbol;
   }
 
-  public boolean isTaken(){
-    return taken;
+  public int getValue() {
+    return value;
+  }
+
+  public boolean isTaken() {
+    return value != 0;
   }
 }

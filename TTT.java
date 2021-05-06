@@ -23,12 +23,12 @@ public class TTT extends Application {
     grid.setGridLinesVisible(true);
 
     squares = new Square[3][3];
-    for (int i = 0; i < 3; i++) {
-      for (int k = 0; k < 3; k++) {
+    for (int row = 0; row < 3; row++) {
+      for (int col = 0; col < 3; col++) {
         Square button = new Square(' ');
         button.setOnAction(new SquareClickHandler());
-        grid.add(button, i, k);
-        squares[i][k] = button;
+        grid.add(button, col, row);
+        squares[col][row] = button;
       }
     }
 
@@ -40,7 +40,7 @@ public class TTT extends Application {
     stage.show();
   }
 
-  private void advanceGame() {
+  private void computerMove() {
     if (fullBoard()) {
       gameDraw();
     } else {
@@ -60,8 +60,8 @@ public class TTT extends Application {
   private boolean fullBoard() {
     int counter = 0;
 
-    for (Square[] ss : squares) {
-      for (Square s : ss) {
+    for (Square[] row : squares) {
+      for (Square s : row) {
         if (s.isTaken()) {
           counter++;
         }
@@ -76,57 +76,44 @@ public class TTT extends Application {
   }
 
   private boolean checkWinner(char symbol) {
-    if (squares[0][0].getSymbol() == symbol
-        && squares[0][1].getSymbol() == symbol
-        && squares[0][2].getSymbol() == symbol) {
-      t.setText(symbol + " vant!");
-      finished = true;
-      return true;
-    } else if (squares[1][0].getSymbol() == symbol
-        && squares[1][1].getSymbol() == symbol
-        && squares[1][2].getSymbol() == symbol) {
-      t.setText(symbol + " vant!");
-      finished = true;
-      return true;
-    } else if (squares[2][0].getSymbol() == symbol
-        && squares[2][1].getSymbol() == symbol
-        && squares[2][2].getSymbol() == symbol) {
-      t.setText(symbol + " vant!");
-      finished = true;
-      return true;
-    } else if (squares[0][0].getSymbol() == symbol
-        && squares[1][0].getSymbol() == symbol
-        && squares[2][0].getSymbol() == symbol) {
-      t.setText(symbol + " vant!");
-      finished = true;
-      return true;
-    } else if (squares[0][1].getSymbol() == symbol
-        && squares[1][1].getSymbol() == symbol
-        && squares[2][1].getSymbol() == symbol) {
-      t.setText(symbol + " vant!");
-      finished = true;
-      return true;
-    } else if (squares[0][2].getSymbol() == symbol
-        && squares[1][2].getSymbol() == symbol
-        && squares[2][2].getSymbol() == symbol) {
-      t.setText(symbol + " vant!");
-      finished = true;
-      return true;
-    } else if (squares[0][0].getSymbol() == symbol
-        && squares[1][1].getSymbol() == symbol
-        && squares[2][2].getSymbol() == symbol) {
-      t.setText(symbol + " vant!");
-      finished = true;
-      return true;
-    } else if (squares[2][0].getSymbol() == symbol
-        && squares[1][1].getSymbol() == symbol
-        && squares[0][2].getSymbol() == symbol) {
-      t.setText(symbol + " vant!");
-      finished = true;
-      return true;
+    int winValue, rowCount, colCount;
+    if (symbol == 'O') {
+      winValue = 3;
+    } else {
+      winValue = -3;
     }
 
+    // Checks for winner in each row and column
+    for (int row = 0; row < 3; row++) {
+      colCount = 0;
+      rowCount = 0;
+      for (int col = 0; col < 3; col++) {
+        rowCount += squares[row][col].getValue();
+        colCount += squares[col][row].getValue();
+      }
+      if (rowCount == winValue || colCount == winValue) {
+        announceWinner(symbol);
+        return true;
+      }
+    }
+
+    // Checks for diagonal or antidiagonal winner
+    int diaCount = 0;
+    int antiCount = 0;
+    for (int i = 0; i < 3; i++) {
+      diaCount += squares[i][i].getValue();
+      antiCount += squares[2 - i][i].getValue();
+    }
+    if (diaCount == winValue || antiCount == winValue) {
+      announceWinner(symbol);
+      return true;
+    }
     return false;
+  }
+
+  private void announceWinner(char symbol) {
+    t.setText(symbol + " vant!");
+    finished = true;
   }
 
   private class SquareClickHandler implements EventHandler<ActionEvent> {
@@ -137,7 +124,7 @@ public class TTT extends Application {
         if (!((Square) event.getSource()).isTaken()) {
           ((Square) event.getSource()).playMove('O');
           if (!checkWinner('O')) {
-            advanceGame();
+            computerMove();
           }
         }
       }
