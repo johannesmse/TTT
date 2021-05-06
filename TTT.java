@@ -2,7 +2,9 @@ import java.util.Random;
 import javafx.application.Application;
 import javafx.event.*;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -12,12 +14,42 @@ public class TTT extends Application {
 
   Square squares[][];
   Text t;
-  boolean finished = false;
+  boolean gameOver;
+  Text playerScore;
+  Text computerScore;
+  int computer = 0;
+  int player = 0;
 
   @Override
-  public void start(Stage stage) {
+  public void start(Stage primarystage) {
+    initialize(primarystage);
+  }
+
+  public void initialize(Stage stage) {
+    gameOver = false;
     VBox parent = new VBox();
+    HBox info = new HBox();
     GridPane grid = new GridPane();
+
+    Button restartbutton = new Button("New Game");
+    restartbutton.setMinSize(100, 50);
+    restartbutton.setTranslateX(498);
+    restartbutton.setTranslateY(-70);
+    restartbutton.setOnAction(
+        e -> {
+          initialize(stage);
+        });
+
+    computerScore = new Text("Computer: " + computer);
+    computerScore.setFont(new Font(20));
+    computerScore.setTranslateX(88);
+    computerScore.setTranslateY(80);
+
+    playerScore = new Text("Player: " + player);
+    playerScore.setFont(new Font(20));
+    playerScore.setTranslateX(5);
+    playerScore.setTranslateY(55);
+
     t = new Text("Pick a square");
     t.setFont(new Font(60));
     grid.setGridLinesVisible(true);
@@ -32,8 +64,13 @@ public class TTT extends Application {
       }
     }
 
+    info.getChildren().add(t);
+    info.getChildren().add(restartbutton);
+    info.getChildren().add(computerScore);
+    info.getChildren().add(playerScore);
     parent.getChildren().add(grid);
-    parent.getChildren().add(t);
+    parent.getChildren().add(info);
+    parent.getChildren().add(restartbutton);
     Scene scene = new Scene(parent);
     stage.setScene(scene);
     stage.setTitle("Tic tac toe");
@@ -45,15 +82,18 @@ public class TTT extends Application {
       gameDraw();
     } else {
       Random rn = new Random();
-      int number1 = rn.nextInt(3) + 0;
-      int number2 = rn.nextInt(3) + 0;
+      int randomNumber1 = rn.nextInt(3);
+      int randomNumber2 = rn.nextInt(3);
 
-      while (squares[number1][number2].isTaken()) {
-        number1 = rn.nextInt(3) + 0;
-        number2 = rn.nextInt(3) + 0;
+      while (squares[randomNumber1][randomNumber2].isTaken()) {
+        randomNumber1 = rn.nextInt(3);
+        randomNumber2 = rn.nextInt(3);
       }
-      squares[number1][number2].playMove('X');
-      checkWinner('X');
+      squares[randomNumber1][randomNumber2].playMove('X');
+      gameOver = checkWinner('X');
+      if (gameOver) {
+        computer++;
+      }
     }
   }
 
@@ -72,7 +112,7 @@ public class TTT extends Application {
 
   private void gameDraw() {
     t.setText("It's a draw!");
-    finished = true;
+    gameOver = true;
   }
 
   private boolean checkWinner(char symbol) {
@@ -113,17 +153,20 @@ public class TTT extends Application {
 
   private void announceWinner(char symbol) {
     t.setText(symbol + " won!");
-    finished = true;
+    gameOver = true;
   }
 
   private class SquareClickHandler implements EventHandler<ActionEvent> {
     @Override
     public void handle(ActionEvent event) {
 
-      if (!finished) {
+      if (!gameOver) {
         if (!((Square) event.getSource()).isTaken()) {
           ((Square) event.getSource()).playMove('O');
-          if (!checkWinner('O')) {
+          gameOver = checkWinner('O');
+          if (gameOver) {
+            player++;
+          } else {
             computerMove();
           }
         }
