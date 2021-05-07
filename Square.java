@@ -14,13 +14,16 @@ public class Square extends Button {
   }
 
   public void playMove(char symbol) {
-    setText("" + symbol);
+
     this.symbol = symbol;
     if (symbol == 'O') {
       this.value = 1;
+      setStyle("-fx-text-fill: red");
     } else {
+      setStyle("-fx-text-fill: blue");
       this.value = -1;
     }
+    setText("" + symbol);
   }
 
   public void resetSquare() {

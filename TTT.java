@@ -19,11 +19,12 @@ public class TTT extends Application {
   Text computerText;
   int computerScore = 0;
   int playerScore = 0;
+  Random rn = new Random();
+  String BMPhrases[] = {"Horrible", "Awful", "Disgraceful", "Terrible", "Shameful"};
 
   // Computer makes a random move
   // Used for level 1 computer moves
   private void randomComputerMove() {
-    Random rn = new Random();
     int randomNumber1 = rn.nextInt(3);
     int randomNumber2 = rn.nextInt(3);
 
@@ -182,11 +183,11 @@ public class TTT extends Application {
     if (symbol == 'O') {
       playerScore++;
       playerText.setText("Player: " + playerScore);
-      t.setText("Player won!");
+      t.setText("Lucky");
     } else {
       computerScore++;
       computerText.setText("Computer: " + computerScore);
-      t.setText("Computer won!");
+      t.setText("Easy win for me");
     }
     gameOver = true;
   }
@@ -212,6 +213,8 @@ public class TTT extends Application {
             checkDraw();
           }
           if (!gameOver) {
+            int rand = rn.nextInt(5);
+            t.setText(BMPhrases[rand]);
             levelTwoComputerMove();
           }
         }
@@ -219,13 +222,9 @@ public class TTT extends Application {
     }
   }
 
-  @Override
-  public void start(Stage primarystage) {
-    initialize(primarystage);
-  }
-
   // Draws the grid, adds clickable buttons and prepares the game
-  public void initialize(Stage stage) {
+  @Override
+  public void start(Stage stage) {
     gameOver = false;
     VBox parent = new VBox();
     HBox info = new HBox();
