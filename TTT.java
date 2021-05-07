@@ -24,6 +24,8 @@ public class TTT extends Application {
   int playerScore = 0;
   int computerLevel = 1;
   Random rn = new Random();
+  boolean player1Turn = true;
+  char nextMoveSymbol;
   String BMPhrases[] = {"Horrible", "Awful", "Disgraceful", "Terrible", "Shameful"};
 
   // Computer makes a random move
@@ -186,12 +188,12 @@ public class TTT extends Application {
   private void announceWinner(char symbol) {
     if (symbol == 'O') {
       playerScore++;
-      playerText.setText("Player: " + playerScore);
+      playerText.setText("Player O : " + playerScore);
       t.setText("Lucky");
     } else {
       computerScore++;
-      computerText.setText("Computer: " + computerScore);
-      t.setText("Easy win for me");
+      computerText.setText("Player X : " + computerScore);
+      t.setText("Easy");
     }
     gameOver = true;
   }
@@ -202,6 +204,7 @@ public class TTT extends Application {
         s.resetSquare();
       }
     }
+    player1Turn = true;
     gameOver = false;
     t.setText("Pick a square");
   }
@@ -209,10 +212,15 @@ public class TTT extends Application {
   private class SquareClickHandler implements EventHandler<ActionEvent> {
     @Override
     public void handle(ActionEvent event) {
+      if (player1Turn) {
+        nextMoveSymbol = 'O';
+      } else {
+        nextMoveSymbol = 'X';
+      }
       if (!gameOver) {
         if (!((Square) event.getSource()).isTaken()) {
-          ((Square) event.getSource()).playMove('O');
-          checkWinner('O');
+          ((Square) event.getSource()).playMove(nextMoveSymbol);
+          checkWinner(nextMoveSymbol);
           if (!gameOver) {
             checkDraw();
           }
@@ -223,6 +231,8 @@ public class TTT extends Application {
               randomComputerMove();
             } else if (computerLevel == 2) {
               levelTwoComputerMove();
+            } else if (computerLevel == 0) {
+              player1Turn = !player1Turn;
             }
           }
         }
@@ -235,7 +245,7 @@ public class TTT extends Application {
   public void start(Stage stage) {
     gameOver = false;
     VBox parent = new VBox();
-    HBox info = new HBox();
+    HBox userInterface = new HBox();
     GridPane grid = new GridPane();
 
     Button restartButton = new Button("New Game");
@@ -247,10 +257,11 @@ public class TTT extends Application {
           resetBoard();
         });
 
-    ObservableList<String> options = FXCollections.observableArrayList("Easy", "Medium");
+    ObservableList<String> options =
+        FXCollections.observableArrayList("Easy", "Medium", "Friendly battle");
     ComboBox dropDownMenu = new ComboBox(options);
 
-    dropDownMenu.setTranslateX(403);
+    dropDownMenu.setTranslateX(371);
     dropDownMenu.setTranslateY(2);
     dropDownMenu.getSelectionModel().selectFirst();
     dropDownMenu.setOnAction(
@@ -260,22 +271,24 @@ public class TTT extends Application {
             computerLevel = 1;
           } else if (dropDownMenu.getValue() == "Medium") {
             computerLevel = 2;
+          } else {
+            computerLevel = 0;
           }
         });
 
-    computerText = new Text("Computer: " + computerScore);
+    computerText = new Text("Player X : " + computerScore);
     computerText.setFont(new Font(20));
-    computerText.setTranslateX(396);
+    computerText.setTranslateX(376);
     computerText.setTranslateY(80);
 
-    playerText = new Text("Player: " + playerScore);
+    playerText = new Text("Player O : " + playerScore);
     playerText.setFont(new Font(20));
-    playerText.setTranslateX(324);
+    playerText.setTranslateX(281);
     playerText.setTranslateY(55);
 
     t = new Text("Pick a square");
     t.setFont(new Font(50));
-    t.setTranslateX(-270);
+    t.setTranslateX(-304);
     t.setTranslateY(-8);
 
     squares = new Square[3][3];
@@ -287,13 +300,13 @@ public class TTT extends Application {
         squares[row][col] = button;
       }
     }
-    info.getChildren().add(restartButton);
-    info.getChildren().add(dropDownMenu);
-    info.getChildren().add(computerText);
-    info.getChildren().add(playerText);
-    info.getChildren().add(t);
+
+    userInterface.getChildren().add(dropDownMenu);
+    userInterface.getChildren().add(computerText);
+    userInterface.getChildren().add(playerText);
+    userInterface.getChildren().add(t);
     parent.getChildren().add(grid);
-    parent.getChildren().add(info);
+    parent.getChildren().add(userInterface);
     parent.getChildren().add(restartButton);
     grid.setGridLinesVisible(true);
     Scene scene = new Scene(parent);
