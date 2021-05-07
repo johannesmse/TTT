@@ -6,10 +6,7 @@ public class Square extends Button {
   char symbol;
   int value = 0;
 
-  Square(char text) {
-    super("" + text);
-    symbol = text;
-    setText("" + text);
+  Square(char symbol) {
     setMinWidth(200);
     setMinHeight(200);
     Font font = new Font(72);
@@ -24,6 +21,12 @@ public class Square extends Button {
     } else {
       this.value = -1;
     }
+  }
+
+  public void resetSquare() {
+    this.symbol = ' ';
+    this.value = 0;
+    setText(" ");
   }
 
   public char getSymbol() {

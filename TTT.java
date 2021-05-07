@@ -35,6 +35,105 @@ public class TTT extends Application {
     checkWinner('X');
   }
 
+  // Plays winning move, otherwise prevents opponents winning move
+  private void levelTwoComputerMove() {
+    int rowCount, colCount;
+    int preventWinRow = 3;
+    int preventWinCol = 3;
+
+    for (int row = 0; row < 3; row++) {
+      rowCount = 0;
+      colCount = 0;
+      for (int col = 0; col < 3; col++) {
+        rowCount += squares[row][col].getValue();
+        colCount += squares[col][row].getValue();
+      }
+      // Found a row with 2/3 X, makes the winning move
+      if (rowCount == -2) {
+        for (int i = 0; i < 3; i++) {
+          if (!squares[row][i].isTaken()) {
+            squares[row][i].playMove('X');
+            announceWinner('X');
+            return;
+          }
+        }
+      }
+      // Found a col with 2/3 X, makes the winning move
+      else if (colCount == -2) {
+        for (int i = 0; i < 3; i++) {
+          if (!squares[i][row].isTaken()) {
+            squares[i][row].playMove('X');
+            announceWinner('X');
+            return;
+          }
+        }
+      }
+      // Found possible win for opponent in next move
+      else if (rowCount == 2) {
+        for (int i = 0; i < 3; i++) {
+          if (!squares[row][i].isTaken()) {
+            preventWinRow = row;
+            preventWinCol = i;
+          }
+        }
+      }
+      // Found possible win for opponent in next move
+      else if (colCount == 2) {
+        for (int i = 0; i < 3; i++) {
+          if (!squares[i][row].isTaken()) {
+            preventWinRow = i;
+            preventWinCol = row;
+          }
+        }
+      }
+    }
+    // Checks for diagonal or antidiagonal winning move
+    int diaCount = 0;
+    int antiCount = 0;
+    for (int i = 0; i < 3; i++) {
+      diaCount += squares[i][i].getValue();
+      antiCount += squares[2 - i][i].getValue();
+    }
+    // Found a diagonal with 2/3 X, makes the winning move
+    if (diaCount == -2) {
+      for (int i = 0; i < 3; i++) {
+        if (!squares[i][i].isTaken()) {
+          squares[i][i].playMove('X');
+          announceWinner('X');
+          return;
+        }
+      }
+    } else if (antiCount == -2) {
+      for (int i = 0; i < 3; i++) {
+        if (!squares[i][2 - i].isTaken()) {
+          squares[i][2 - i].playMove('X');
+          announceWinner('X');
+          return;
+        }
+      }
+    } else if (diaCount == 2) {
+      for (int i = 0; i < 3; i++) {
+        if (!squares[i][i].isTaken()) {
+          preventWinRow = i;
+          preventWinCol = i;
+        }
+      }
+    } else if (antiCount == 2) {
+      for (int i = 0; i < 3; i++) {
+        if (!squares[i][2 - i].isTaken()) {
+          preventWinRow = i;
+          preventWinCol = 2 - i;
+        }
+      }
+    }
+    // Prevents opponents winning move, otherwise plays random move
+    if (preventWinRow != 3) {
+      squares[preventWinRow][preventWinCol].playMove('X');
+    } else {
+      randomComputerMove();
+    }
+  }
+
   private void checkDraw() {
     for (Square[] row : squares) {
       for (Square s : row) {
@@ -45,7 +144,6 @@ public class TTT extends Application {
     }
     t.setText("It's a draw!");
     gameOver = true;
-    return;
   }
 
   private void checkWinner(char symbol) {
@@ -55,11 +153,10 @@ public class TTT extends Application {
     } else {
       winValue = -3;
     }
-
     // Checks for winner in each row and column
     for (int row = 0; row < 3; row++) {
-      colCount = 0;
       rowCount = 0;
+      colCount = 0;
       for (int col = 0; col < 3; col++) {
         rowCount += squares[row][col].getValue();
         colCount += squares[col][row].getValue();
@@ -69,13 +166,12 @@ public class TTT extends Application {
         return;
       }
     }
-
     // Checks for diagonal or antidiagonal winner
     int diaCount = 0;
     int antiCount = 0;
     for (int i = 0; i < 3; i++) {
       diaCount += squares[i][i].getValue();
-      antiCount += squares[2 - i][i].getValue();
+      antiCount += squares[i][2 - i].getValue();
     }
     if (diaCount == winValue || antiCount == winValue) {
       announceWinner(symbol);
@@ -95,6 +191,16 @@ public class TTT extends Application {
     gameOver = true;
   }
 
+  private void resetBoard() {
+    for (Square[] row : squares) {
+      for (Square s : row) {
+        s.resetSquare();
+      }
+    }
+    gameOver = false;
+    t.setText("Pick a square");
+  }
+
   private class SquareClickHandler implements EventHandler<ActionEvent> {
     @Override
     public void handle(ActionEvent event) {
@@ -106,7 +212,7 @@ public class TTT extends Application {
             checkDraw();
           }
           if (!gameOver) {
-            randomComputerMove();
+            levelTwoComputerMove();
           }
         }
       }
@@ -131,7 +237,7 @@ public class TTT extends Application {
     restartButton.setTranslateY(-57);
     restartButton.setOnAction(
         e -> {
-          initialize(stage);
+          resetBoard();
         });
 
     computerText = new Text("Computer: " + computerScore);
@@ -155,10 +261,9 @@ public class TTT extends Application {
         Square button = new Square(' ');
         button.setOnAction(new SquareClickHandler());
         grid.add(button, col, row);
-        squares[col][row] = button;
+        squares[row][col] = button;
       }
     }
-
     info.getChildren().add(restartButton);
     info.getChildren().add(computerText);
     info.getChildren().add(playerText);
