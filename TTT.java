@@ -1,8 +1,11 @@
 import java.util.Random;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.*;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -19,6 +22,7 @@ public class TTT extends Application {
   Text computerText;
   int computerScore = 0;
   int playerScore = 0;
+  int computerLevel = 1;
   Random rn = new Random();
   String BMPhrases[] = {"Horrible", "Awful", "Disgraceful", "Terrible", "Shameful"};
 
@@ -215,7 +219,11 @@ public class TTT extends Application {
           if (!gameOver) {
             int rand = rn.nextInt(5);
             t.setText(BMPhrases[rand]);
-            levelTwoComputerMove();
+            if (computerLevel == 1) {
+              randomComputerMove();
+            } else if (computerLevel == 2) {
+              levelTwoComputerMove();
+            }
           }
         }
       }
@@ -239,19 +247,35 @@ public class TTT extends Application {
           resetBoard();
         });
 
+    ObservableList<String> options = FXCollections.observableArrayList("Easy", "Medium");
+    ComboBox dropDownMenu = new ComboBox(options);
+
+    dropDownMenu.setTranslateX(403);
+    dropDownMenu.setTranslateY(2);
+    dropDownMenu.getSelectionModel().selectFirst();
+    dropDownMenu.setOnAction(
+        e -> {
+          resetBoard();
+          if (dropDownMenu.getValue() == "Easy") {
+            computerLevel = 1;
+          } else if (dropDownMenu.getValue() == "Medium") {
+            computerLevel = 2;
+          }
+        });
+
     computerText = new Text("Computer: " + computerScore);
     computerText.setFont(new Font(20));
-    computerText.setTranslateX(486);
+    computerText.setTranslateX(396);
     computerText.setTranslateY(80);
 
     playerText = new Text("Player: " + playerScore);
     playerText.setFont(new Font(20));
-    playerText.setTranslateX(413);
+    playerText.setTranslateX(324);
     playerText.setTranslateY(55);
 
     t = new Text("Pick a square");
     t.setFont(new Font(50));
-    t.setTranslateX(-177);
+    t.setTranslateX(-270);
     t.setTranslateY(-8);
 
     squares = new Square[3][3];
@@ -264,6 +288,7 @@ public class TTT extends Application {
       }
     }
     info.getChildren().add(restartButton);
+    info.getChildren().add(dropDownMenu);
     info.getChildren().add(computerText);
     info.getChildren().add(playerText);
     info.getChildren().add(t);
