@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Random;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -16,6 +17,7 @@ import javafx.stage.Stage;
 public class TTT extends Application {
 
   Square squares[][];
+  ArrayList<Group> groups = new ArrayList<Group>();
   Text t;
   boolean gameOver;
   Text playerText;
@@ -28,8 +30,8 @@ public class TTT extends Application {
   char nextMoveSymbol;
   String BMPhrases[] = {"Horrible", "Awful", "Disgraceful", "Terrible", "Shameful"};
 
+  // Level 1 computer moves
   // Computer makes a random move
-  // Used for level 1 computer moves
   private void randomComputerMove() {
     int randomNumber1 = rn.nextInt(3);
     int randomNumber2 = rn.nextInt(3);
@@ -39,106 +41,31 @@ public class TTT extends Application {
       randomNumber2 = rn.nextInt(3);
     }
     squares[randomNumber1][randomNumber2].playMove('X');
-    checkWinner('X');
+    checkForWinner();
   }
 
+  // Level 2 computer moves
   // Plays winning move, otherwise prevents opponents winning move
+  // Otherwise plays random move
   private void levelTwoComputerMove() {
-    int rowCount, colCount;
-    int preventWinRow = 3;
-    int preventWinCol = 3;
-
-    for (int row = 0; row < 3; row++) {
-      rowCount = 0;
-      colCount = 0;
-      for (int col = 0; col < 3; col++) {
-        rowCount += squares[row][col].getValue();
-        colCount += squares[col][row].getValue();
-      }
-      // Found a row with 2/3 X, makes the winning move
-      if (rowCount == -2) {
-        for (int i = 0; i < 3; i++) {
-          if (!squares[row][i].isTaken()) {
-            squares[row][i].playMove('X');
-            announceWinner('X');
-            return;
-          }
-        }
-      }
-      // Found a col with 2/3 X, makes the winning move
-      else if (colCount == -2) {
-        for (int i = 0; i < 3; i++) {
-          if (!squares[i][row].isTaken()) {
-            squares[i][row].playMove('X');
-            announceWinner('X');
-            return;
-          }
-        }
-      }
-      // Found possible win for opponent in next move
-      else if (rowCount == 2) {
-        for (int i = 0; i < 3; i++) {
-          if (!squares[row][i].isTaken()) {
-            preventWinRow = row;
-            preventWinCol = i;
-          }
-        }
-      }
-      // Found possible win for opponent in next move
-      else if (colCount == 2) {
-        for (int i = 0; i < 3; i++) {
-          if (!squares[i][row].isTaken()) {
-            preventWinRow = i;
-            preventWinCol = row;
-          }
-        }
+    // Checks for winning move
+    for (Group g : groups) {
+      if (g.possibleWin('X') != null) {
+        Square s = g.possibleWin('X');
+        s.playMove('X');
+        checkForWinner();
+        return;
       }
     }
-    // Checks for diagonal or antidiagonal winning move
-    int diaCount = 0;
-    int antiCount = 0;
-    for (int i = 0; i < 3; i++) {
-      diaCount += squares[i][i].getValue();
-      antiCount += squares[2 - i][i].getValue();
-    }
-    // Found a diagonal with 2/3 X, makes the winning move
-    if (diaCount == -2) {
-      for (int i = 0; i < 3; i++) {
-        if (!squares[i][i].isTaken()) {
-          squares[i][i].playMove('X');
-          announceWinner('X');
-          return;
-        }
-      }
-    } else if (antiCount == -2) {
-      for (int i = 0; i < 3; i++) {
-        if (!squares[i][2 - i].isTaken()) {
-          squares[i][2 - i].playMove('X');
-          announceWinner('X');
-          return;
-        }
-      }
-    } else if (diaCount == 2) {
-      for (int i = 0; i < 3; i++) {
-        if (!squares[i][i].isTaken()) {
-          preventWinRow = i;
-          preventWinCol = i;
-        }
-      }
-    } else if (antiCount == 2) {
-      for (int i = 0; i < 3; i++) {
-        if (!squares[i][2 - i].isTaken()) {
-          preventWinRow = i;
-          preventWinCol = 2 - i;
-        }
+    // Checks for opponent winning move
+    for (Group g : groups) {
+      if (g.possibleWin('O') != null) {
+        Square s = g.possibleWin('O');
+        s.playMove('X');
+        return;
       }
     }
-    // Prevents opponents winning move, otherwise plays random move
-    if (preventWinRow != 3) {
-      squares[preventWinRow][preventWinCol].playMove('X');
-    } else {
-      randomComputerMove();
-    }
+    randomComputerMove();
   }
 
   private void checkDraw() {
@@ -153,49 +80,22 @@ public class TTT extends Application {
     gameOver = true;
   }
 
-  private void checkWinner(char symbol) {
-    int rowCount, colCount, winValue;
-    if (symbol == 'O') {
-      winValue = 3;
-    } else {
-      winValue = -3;
-    }
-    // Checks for winner in each row and column
-    for (int row = 0; row < 3; row++) {
-      rowCount = 0;
-      colCount = 0;
-      for (int col = 0; col < 3; col++) {
-        rowCount += squares[row][col].getValue();
-        colCount += squares[col][row].getValue();
-      }
-      if (rowCount == winValue || colCount == winValue) {
-        announceWinner(symbol);
-        return;
+  private void checkForWinner() {
+    for (Group g : groups) {
+      if (g.checkWin() != ' ') {
+        char symbol = g.checkWin();
+        if (symbol == 'O') {
+          playerScore++;
+          playerText.setText("Player O : " + playerScore);
+          t.setText("Lucky");
+        } else {
+          computerScore++;
+          computerText.setText("Player X : " + computerScore);
+          t.setText("Easy");
+        }
+        gameOver = true;
       }
     }
-    // Checks for diagonal or antidiagonal winner
-    int diaCount = 0;
-    int antiCount = 0;
-    for (int i = 0; i < 3; i++) {
-      diaCount += squares[i][i].getValue();
-      antiCount += squares[i][2 - i].getValue();
-    }
-    if (diaCount == winValue || antiCount == winValue) {
-      announceWinner(symbol);
-    }
-  }
-
-  private void announceWinner(char symbol) {
-    if (symbol == 'O') {
-      playerScore++;
-      playerText.setText("Player O : " + playerScore);
-      t.setText("Lucky");
-    } else {
-      computerScore++;
-      computerText.setText("Player X : " + computerScore);
-      t.setText("Easy");
-    }
-    gameOver = true;
   }
 
   private void resetBoard() {
@@ -220,7 +120,7 @@ public class TTT extends Application {
       if (!gameOver) {
         if (!((Square) event.getSource()).isTaken()) {
           ((Square) event.getSource()).playMove(nextMoveSymbol);
-          checkWinner(nextMoveSymbol);
+          checkForWinner();
           if (!gameOver) {
             checkDraw();
           }
@@ -259,7 +159,7 @@ public class TTT extends Application {
 
     ObservableList<String> options =
         FXCollections.observableArrayList("Easy", "Medium", "Friendly battle");
-    ComboBox dropDownMenu = new ComboBox(options);
+    ComboBox<String> dropDownMenu = new ComboBox<>(options);
 
     dropDownMenu.setTranslateX(371);
     dropDownMenu.setTranslateY(2);
@@ -300,6 +200,16 @@ public class TTT extends Application {
         squares[row][col] = button;
       }
     }
+    groups.add(new Group(squares[0][0], squares[0][1], squares[0][2]));
+    groups.add(new Group(squares[1][0], squares[1][1], squares[1][2]));
+    groups.add(new Group(squares[2][0], squares[2][1], squares[2][2]));
+
+    groups.add(new Group(squares[0][0], squares[1][0], squares[2][0]));
+    groups.add(new Group(squares[0][1], squares[1][1], squares[2][1]));
+    groups.add(new Group(squares[0][2], squares[1][2], squares[2][2]));
+
+    groups.add(new Group(squares[0][0], squares[1][1], squares[2][2]));
+    groups.add(new Group(squares[2][0], squares[1][1], squares[0][2]));
 
     userInterface.getChildren().add(dropDownMenu);
     userInterface.getChildren().add(computerText);

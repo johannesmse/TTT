@@ -7,6 +7,7 @@ public class Square extends Button {
   int value = 0;
 
   Square(char symbol) {
+    this.symbol = symbol;
     setMinWidth(200);
     setMinHeight(200);
     Font font = new Font(72);
@@ -14,7 +15,6 @@ public class Square extends Button {
   }
 
   public void playMove(char symbol) {
-
     this.symbol = symbol;
     if (symbol == 'O') {
       this.value = 1;
