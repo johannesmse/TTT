@@ -30,6 +30,7 @@ public class Square extends Button {
     this.symbol = ' ';
     this.value = 0;
     setText(" ");
+    setStyle(null);
   }
 
   public char getSymbol() {

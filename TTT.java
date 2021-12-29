@@ -88,10 +88,16 @@ public class TTT extends Application {
           playerScore++;
           playerText.setText("Player O : " + playerScore);
           t.setText("Lucky");
+          for (Square s : g.getGroup()) {
+            s.setStyle("-fx-background-color: red");
+          }
         } else {
           computerScore++;
           computerText.setText("Player X : " + computerScore);
           t.setText("Easy");
+          for (Square s : g.getGroup()) {
+            s.setStyle("-fx-background-color: blue");
+          }
         }
         gameOver = true;
       }
