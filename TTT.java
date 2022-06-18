@@ -1,5 +1,3 @@
-import java.util.ArrayList;
-import java.util.Random;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -15,63 +13,22 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class TTT extends Application {
-
-  Square squares[][];
-  ArrayList<Group> groups = new ArrayList<Group>();
+  ComputerAI computer;
+  Square[][] squares = new Square[3][3];
+  Group[] groups = new Group[8];
   Text t;
-  boolean gameOver;
   Text playerText;
   Text computerText;
   int computerScore = 0;
   int playerScore = 0;
-  int computerLevel = 1;
-  Random rn = new Random();
+  boolean gameOver = false;
   boolean player1Turn = true;
   char nextMoveSymbol;
-  String BMPhrases[] = {"Horrible", "Awful", "Disgraceful", "Terrible", "Shameful"};
 
-  // Level 1 computer moves
-  // Computer makes a random move
-  private void randomComputerMove() {
-    int randomNumber1 = rn.nextInt(3);
-    int randomNumber2 = rn.nextInt(3);
-
-    while (squares[randomNumber1][randomNumber2].isTaken()) {
-      randomNumber1 = rn.nextInt(3);
-      randomNumber2 = rn.nextInt(3);
-    }
-    squares[randomNumber1][randomNumber2].playMove('X');
-    checkForWinner();
-  }
-
-  // Level 2 computer moves
-  // Plays winning move, otherwise prevents opponents winning move
-  // Otherwise plays random move
-  private void levelTwoComputerMove() {
-    // Checks for winning move
-    for (Group g : groups) {
-      if (g.possibleWin('X') != null) {
-        Square s = g.possibleWin('X');
-        s.playMove('X');
-        checkForWinner();
-        return;
-      }
-    }
-    // Checks for opponent winning move
-    for (Group g : groups) {
-      if (g.possibleWin('O') != null) {
-        Square s = g.possibleWin('O');
-        s.playMove('X');
-        return;
-      }
-    }
-    randomComputerMove();
-  }
-
-  private void checkDraw() {
-    for (Square[] row : squares) {
-      for (Square s : row) {
-        if (!s.isTaken()) {
+  private void checkDraw(){
+    for (Square[] row : squares){
+      for (Square s : row){
+        if (!s.isTaken()){
           return;
         }
       }
@@ -80,33 +37,34 @@ public class TTT extends Application {
     gameOver = true;
   }
 
-  private void checkForWinner() {
-    for (Group g : groups) {
+  private void checkForWinner(){
+    for (Group g : groups){
       char symbol = g.checkWin();
-      if (symbol != ' ') {
-        if (symbol == 'O') {
+      if (symbol != ' '){
+        if (symbol == 'O'){
           playerScore++;
           playerText.setText("Player O : " + playerScore);
-          t.setText("Lucky");
-          for (Square s : g.getGroup()) {
+          t.setText("O wins!");
+          for (Square s : g.getGroup()){
             s.setStyle("-fx-background-color: red");
           }
         } else {
           computerScore++;
           computerText.setText("Player X : " + computerScore);
-          t.setText("Easy");
-          for (Square s : g.getGroup()) {
+          t.setText("X wins!");
+          for (Square s : g.getGroup()){
             s.setStyle("-fx-background-color: blue");
           }
         }
         gameOver = true;
+        return;
       }
     }
   }
 
-  private void resetBoard() {
-    for (Square[] row : squares) {
-      for (Square s : row) {
+  private void resetBoard(){
+    for (Square[] row : squares){
+      for (Square s : row){
         s.resetSquare();
       }
     }
@@ -117,28 +75,25 @@ public class TTT extends Application {
 
   private class SquareClickHandler implements EventHandler<ActionEvent> {
     @Override
-    public void handle(ActionEvent event) {
-      if (player1Turn) {
+    public void handle(ActionEvent event){
+      if (player1Turn){
         nextMoveSymbol = 'O';
       } else {
         nextMoveSymbol = 'X';
       }
-      if (!gameOver) {
-        if (!((Square) event.getSource()).isTaken()) {
+      if (!gameOver){
+        if (!((Square) event.getSource()).isTaken()){
           ((Square) event.getSource()).playMove(nextMoveSymbol);
           checkForWinner();
-          if (!gameOver) {
+          if (!gameOver){
             checkDraw();
           }
-          if (!gameOver) {
-            int rand = rn.nextInt(5);
-            t.setText(BMPhrases[rand]);
-            if (computerLevel == 1) {
-              randomComputerMove();
-            } else if (computerLevel == 2) {
-              levelTwoComputerMove();
-            } else if (computerLevel == 0) {
+          if (!gameOver){
+            if (computer.level == 0) {
               player1Turn = !player1Turn;
+            } else {
+              computer.makeMove();
+              checkForWinner();
             }
           }
         }
@@ -149,10 +104,10 @@ public class TTT extends Application {
   // Draws the grid, adds clickable buttons and prepares the game
   @Override
   public void start(Stage stage) {
-    gameOver = false;
     VBox parent = new VBox();
     HBox userInterface = new HBox();
     GridPane grid = new GridPane();
+    computer = new ComputerAI(squares, groups);
 
     Button restartButton = new Button("New Game");
     restartButton.setMinSize(100, 50);
@@ -174,30 +129,30 @@ public class TTT extends Application {
         e -> {
           resetBoard();
           if (dropDownMenu.getValue() == "Easy") {
-            computerLevel = 1;
+            computer.level = 1;
           } else if (dropDownMenu.getValue() == "Medium") {
-            computerLevel = 2;
+            computer.level = 2;
           } else {
-            computerLevel = 0;
+            computer.level = 0;
           }
         });
-
-    computerText = new Text("Player X : " + computerScore);
-    computerText.setFont(new Font(20));
-    computerText.setTranslateX(376);
-    computerText.setTranslateY(80);
 
     playerText = new Text("Player O : " + playerScore);
     playerText.setFont(new Font(20));
     playerText.setTranslateX(281);
     playerText.setTranslateY(55);
 
+    computerText = new Text("Player X : " + computerScore);
+    computerText.setFont(new Font(20));
+    computerText.setTranslateX(378);
+    computerText.setTranslateY(80);
+
     t = new Text("Pick a square");
     t.setFont(new Font(50));
     t.setTranslateX(-304);
     t.setTranslateY(-8);
 
-    squares = new Square[3][3];
+
     for (int row = 0; row < 3; row++) {
       for (int col = 0; col < 3; col++) {
         Square button = new Square();
@@ -206,16 +161,16 @@ public class TTT extends Application {
         squares[row][col] = button;
       }
     }
-    groups.add(new Group(squares[0][0], squares[0][1], squares[0][2]));
-    groups.add(new Group(squares[1][0], squares[1][1], squares[1][2]));
-    groups.add(new Group(squares[2][0], squares[2][1], squares[2][2]));
+    groups[0] = new Group(squares[0][0], squares[0][1], squares[0][2]);
+    groups[1] = new Group(squares[1][0], squares[1][1], squares[1][2]);
+    groups[2] = new Group(squares[2][0], squares[2][1], squares[2][2]);
 
-    groups.add(new Group(squares[0][0], squares[1][0], squares[2][0]));
-    groups.add(new Group(squares[0][1], squares[1][1], squares[2][1]));
-    groups.add(new Group(squares[0][2], squares[1][2], squares[2][2]));
+    groups[3] = new Group(squares[0][0], squares[1][0], squares[2][0]);
+    groups[4] = new Group(squares[0][1], squares[1][1], squares[2][1]);
+    groups[5] = new Group(squares[0][2], squares[1][2], squares[2][2]);
 
-    groups.add(new Group(squares[0][0], squares[1][1], squares[2][2]));
-    groups.add(new Group(squares[2][0], squares[1][1], squares[0][2]));
+    groups[6] = new Group(squares[0][0], squares[1][1], squares[2][2]);
+    groups[7] = new Group(squares[2][0], squares[1][1], squares[0][2]);
 
     userInterface.getChildren().add(dropDownMenu);
     userInterface.getChildren().add(computerText);
