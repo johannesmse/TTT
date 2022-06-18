@@ -3,32 +3,27 @@ import javafx.scene.control.Button;
 import javafx.scene.text.Font;
 
 public class Square extends Button {
-  char symbol;
-  int value = 0;
+  char symbol = ' ';
 
-  Square(char symbol) {
-    this.symbol = symbol;
+  Square() {
     setMinWidth(200);
     setMinHeight(200);
     Font font = new Font(72);
     setFont(font);
   }
 
-  public void playMove(char symbol) {
-    this.symbol = symbol;
-    if (symbol == 'O') {
-      this.value = 1;
+  public void playMove(char sym) {
+    if (sym == 'O') {
       setStyle("-fx-text-fill: red");
     } else {
       setStyle("-fx-text-fill: blue");
-      this.value = -1;
     }
-    setText("" + symbol);
+    this.symbol = sym;
+    setText("" + sym);
   }
 
   public void resetSquare() {
     this.symbol = ' ';
-    this.value = 0;
     setText(" ");
     setStyle(null);
   }
@@ -37,11 +32,7 @@ public class Square extends Button {
     return symbol;
   }
 
-  public int getValue() {
-    return value;
-  }
-
   public boolean isTaken() {
-    return value != 0;
+    return this.symbol != ' ';
   }
 }

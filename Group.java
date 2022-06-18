@@ -11,34 +11,35 @@ public class Group {
     return this.group;
   }
 
+  public int countSymbol(char sym){
+    int count = 0;
+    for (int i = 0; i < 3; i++){
+      if (this.group[i].symbol == sym){
+        count++;
+      }
+    }
+    return count;
+  }
+
   public char checkWin() {
-    if (group[0].symbol != ' '
-        && group[0].symbol == group[1].symbol
-        && group[1].symbol == group[2].symbol) {
-      return group[0].symbol;
+    if (countSymbol('O') == 3){
+      return 'O';
+    } else if (countSymbol('X') == 3){
+      return 'X';
     } else {
       return ' ';
     }
   }
 
-  // Checks if it is possible to make a winning move for input symbol
+  // Checks if it is possible to make a winning move
   public Square possibleWin(char sym) {
-    // if count(sym, group) == 2 && count(" ", group) == 1:
-    //     return group[group.index(' ')]
-    // return null
-
-    if (sym == group[0].symbol && group[0].symbol == group[1].symbol && group[2].symbol == ' ') {
-      return group[2];
-    } else if (sym == group[0].symbol
-        && group[0].symbol == group[2].symbol
-        && group[1].symbol == ' ') {
-      return group[1];
-    } else if (sym == group[1].symbol
-        && group[1].symbol == group[2].symbol
-        && group[0].symbol == ' ') {
-      return group[0];
-    } else {
-      return null;
+    if (countSymbol(sym) == 2 && countSymbol(' ') == 1){
+      for (int i = 0; i < 3; i++){
+        if (this.group[i].symbol == ' '){
+          return this.group[i];
+        }
+      }
     }
+    return null;
   }
 }

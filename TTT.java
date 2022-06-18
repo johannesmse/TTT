@@ -82,8 +82,8 @@ public class TTT extends Application {
 
   private void checkForWinner() {
     for (Group g : groups) {
-      if (g.checkWin() != ' ') {
-        char symbol = g.checkWin();
+      char symbol = g.checkWin();
+      if (symbol != ' ') {
         if (symbol == 'O') {
           playerScore++;
           playerText.setText("Player O : " + playerScore);
@@ -200,7 +200,7 @@ public class TTT extends Application {
     squares = new Square[3][3];
     for (int row = 0; row < 3; row++) {
       for (int col = 0; col < 3; col++) {
-        Square button = new Square(' ');
+        Square button = new Square();
         button.setOnAction(new SquareClickHandler());
         grid.add(button, col, row);
         squares[row][col] = button;
